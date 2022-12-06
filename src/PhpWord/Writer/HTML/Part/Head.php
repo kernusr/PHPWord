@@ -24,6 +24,7 @@ use PhpOffice\PhpWord\Style\Paragraph;
 use PhpOffice\PhpWord\Writer\HTML\Style\Font as FontStyleWriter;
 use PhpOffice\PhpWord\Writer\HTML\Style\Generic as GenericStyleWriter;
 use PhpOffice\PhpWord\Writer\HTML\Style\Paragraph as ParagraphStyleWriter;
+use PhpOffice\PhpWord\Writer\HTML\Style\Table as TableStyleWriter;
 
 /**
  * RTF head part writer.
@@ -127,6 +128,10 @@ class Head extends AbstractPart
                 } elseif ($style instanceof Paragraph) {
                     $styleWriter = new ParagraphStyleWriter($style);
                     $name = '.' . $name;
+                    $css .= "{$name} {" . $styleWriter->write() . '}' . PHP_EOL;
+                } elseif ($style instanceof \PhpOffice\PhpWord\Style\Table){
+                    $styleWriter = new TableStyleWriter($style);
+                    $name = substr($name, 0,1) === '*' ? substr($name, 2) : '.' . $name;
                     $css .= "{$name} {" . $styleWriter->write() . '}' . PHP_EOL;
                 }
             }
