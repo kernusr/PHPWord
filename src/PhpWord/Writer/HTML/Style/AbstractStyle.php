@@ -17,7 +17,10 @@
 
 namespace PhpOffice\PhpWord\Writer\HTML\Style;
 
+use PhpOffice\PhpWord\SimpleType\Border;
 use PhpOffice\PhpWord\Style\AbstractStyle as Style;
+use PhpOffice\PhpWord\Style\Cell;
+use PhpOffice\PhpWord\Style\Table;
 
 /**
  * Style writer.
@@ -123,5 +126,88 @@ abstract class AbstractStyle
     protected function getValueIf($condition, $value)
     {
         return $condition == true ? $value : '';
+    }
+
+    /**
+     * Returns the CSS border values for Cell and Table elements
+     *
+     * @return array
+     */
+    protected function getBorderStyles()
+    {
+        $style = $this->getStyle();
+        if (!$style instanceof Cell
+            && !$style instanceof Table) {
+            return [];
+        }
+        $css = [];
+        $borders = ['top', 'left', 'bottom', 'right'];
+        foreach ($borders as $side) {
+            $ucfSide = ucfirst($side);
+            $borderWidth = call_user_func([$style, "getBorder{$ucfSide}Size"]);
+            if ($borderWidth !== null) {
+                $borderWidth = (int)$borderWidth / 8;
+                if ($borderWidth < 0.25) {
+                    $borderWidth = 0;
+                }
+            }
+            $borderStyle = call_user_func([$style, "getBorder{$ucfSide}Style"]);
+            if ($borderStyle !== null) {
+                $borderStyle = $this->getBorderStyleCSSValue($borderStyle);
+            }
+            $borderColor = call_user_func([$style, "getBorder{$ucfSide}Color"]);
+            $css["border-{$side}-width"] = $this->getValueIf($borderWidth !== null, "{$borderWidth}pt");
+            $css["border-{$side}-style"] = $borderStyle;
+            $css["border-{$side}-color"] = $this->getValueIf($borderColor !== null, "#{$borderColor}");
+        }
+        return $css;
+    }
+
+    /**
+     * Returns the corresponding CSS border style values
+     *
+     * @param string $xmlValue
+     * @return string
+     */
+    protected function getBorderStyleCSSValue(string $xmlValue)
+    {
+        switch ($xmlValue) {
+            case BORDER::DASH_DOT_STROKED:
+            case BORDER::DASHED:
+            case BORDER::DASH_SMALL_GAP:
+                $cssValue = 'dashed';
+                break;
+            case BORDER::INSET:
+                $cssValue = 'inset';
+                break;
+            case BORDER::NIL:
+                $cssValue = 'hidden';
+                break;
+            case BORDER::NONE:
+                $cssValue = 'none';
+                break;
+            case BORDER::OUTSET:
+                $cssValue = 'outset';
+                break;
+            case BORDER::DOT_DASH:
+            case BORDER::DOT_DOT_DASH:
+            case BORDER::DOTTED:
+                $cssValue = 'dotted';
+                break;
+            case BORDER::DOUBLE:
+            case BORDER::DOUBLE_WAVE:
+            case BORDER::TRIPLE:
+                $cssValue = 'double';
+                break;
+            case BORDER::THREE_D_EMBOSS:
+                $cssValue = 'ridge';
+                break;
+            case BORDER::THREE_D_ENGRAVE:
+                $cssValue = 'groove';
+                break;
+            default:
+                $cssValue = 'solid';
+        }
+        return $cssValue;
     }
 }
