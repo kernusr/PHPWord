@@ -364,9 +364,8 @@ abstract class AbstractPart
                     } elseif ('w:tc' == $rowNode->nodeName) { // Cell
                         $cellWidth = $xmlReader->getAttribute('w:w', $rowNode, 'w:tcPr/w:tcW');
                         $cellStyle = null;
-                        $cellStyleNode = $xmlReader->getElement('w:tcPr', $rowNode);
-                        if (null !== $cellStyleNode) {
-                            $cellStyle = $this->readCellStyle($xmlReader, $cellStyleNode);
+                        if ($xmlReader->elementExists('w:tcPr', $rowNode)) {
+                            $cellStyle = $this->readCellStyle($xmlReader, $rowNode);
                         }
 
                         $cell = $row->addCell($cellWidth, $cellStyle);
